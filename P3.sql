@@ -27,8 +27,6 @@ CREATE TABLE [User] (
 CREATE TABLE Trip (
 	trip_id BIGINT NOT NULL,
 	user_id BIGINT NOT NULL,
-	[start_date] DATE,
-	end_date DATE,
 	number_of_people INT,
 	total_cost BIGINT,
 	CONSTRAINT Trip_PK PRIMARY KEY (trip_id),
@@ -55,7 +53,6 @@ CREATE TABLE Destination (
 CREATE TABLE Flight (
 	airport_id VARCHAR(3) NOT NULL,
 	flight_id BIGINT NOT NULL,
-	[date] DATE,
 	department_time TIME,
 	arrival_time TIME,
 	airline VARCHAR(50),
@@ -67,8 +64,6 @@ CREATE TABLE Itinerary (
 	itinerary_id BIGINT NOT NULL,
 	trip_id BIGINT NOT NULL,
 	destination_id BIGINT NOT NULL,
-	[start_date] DATE,
-	end_date DATE,
 	total_cost BIGINT,
     arrival_airport_id VARCHAR(3) NOT NULL,
     arrival_flight_id BIGINT NOT NULL,
@@ -84,7 +79,7 @@ CREATE TABLE Itinerary (
 CREATE TABLE Hotel (
 	hotel_id BIGINT NOT NULL,
 	destination_id BIGINT NOT NULL,
-	[name] VARCHAR(50),
+	[name] VARCHAR(100),
 	price_range VARCHAR(3),
 	CONSTRAINT Hotel_PK PRIMARY KEY (hotel_id),
 	CONSTRAINT Hotel_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
@@ -593,3 +588,20 @@ INSERT INTO Review (review_id, destination_id, user_id, star_rating, comment) VA
     (89, 30, 19, '4', 'National Aquarium is worth visiting. My flight was long but enjoyable.'),
     (90, 30, 20, '3', 'Fort McHenry is historic, but my hotel needed updating.');
 
+
+BULK INSERT Flight
+FROM 'C:\Users\thaon\Downloads\flights.csv'
+WITH (
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n',
+    FIRSTROW = 2
+);
+
+
+BULK INSERT Hotel
+FROM 'C:\Users\thaon\Downloads\hotels.csv'
+WITH (
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n',
+    FIRSTROW = 2
+);
