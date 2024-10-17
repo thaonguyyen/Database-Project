@@ -1,3 +1,4 @@
+--must run twice to drop all tables with foreign keys
 DROP TABLE IF EXISTS Itinerary_Picked_Activity;
 DROP TABLE IF EXISTS Destination_Activity;
 DROP TABLE IF EXISTS Itinerary_Picked_Hotel;
@@ -53,7 +54,7 @@ CREATE TABLE Destination (
 CREATE TABLE Flight (
 	airport_id VARCHAR(3) NOT NULL,
 	flight_id BIGINT NOT NULL,
-	department_time TIME,
+	departure_time TIME,
 	arrival_time TIME,
 	airline VARCHAR(50),
 	CONSTRAINT Flight_PK PRIMARY KEY (airport_id, flight_id),
@@ -65,10 +66,10 @@ CREATE TABLE Itinerary (
 	trip_id BIGINT NOT NULL,
 	destination_id BIGINT NOT NULL,
 	total_cost BIGINT,
-    arrival_airport_id VARCHAR(3) NOT NULL,
-    arrival_flight_id BIGINT NOT NULL,
-    departure_airport_id VARCHAR(3) NOT NULL,
-    departure_flight_id BIGINT NOT NULL,
+   departure_airport_id VARCHAR(3) NOT NULL,
+   departure_flight_id BIGINT NOT NULL,
+   arrival_airport_id VARCHAR(3) NOT NULL,
+   arrival_flight_id BIGINT NOT NULL,
 	CONSTRAINT Itinerary_PK PRIMARY KEY (itinerary_id, trip_id),
 	CONSTRAINT Itinerary_Trip_FK FOREIGN KEY (trip_id) REFERENCES Trip(trip_id),
 	CONSTRAINT Itinerary_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
@@ -280,6 +281,7 @@ INSERT INTO Destination (destination_id, city, [state], airport_id) VALUES
    (29, 'Louisville', 'Kentucky', 'SDF'),
    (30, 'Baltimore', 'Maryland', 'BWI');
 
+--3 most popular activities for each destination
 INSERT INTO Activity (activity_id, name, category) VALUES
     -- New York City
     (1, 'Visit the Statue of Liberty', 'Sightseeing'),
@@ -732,7 +734,9 @@ INSERT INTO Review (review_id, destination_id, user_id, star_rating, comment) VA
     (89, 30, 19, '4', 'National Aquarium is worth visiting. My flight was long but enjoyable.'),
     (90, 30, 20, '3', 'Fort McHenry is historic, but my hotel needed updating.');
 
+
 --TABLE CSV INSERTIONS
+--must download locally then change file path
 BULK INSERT Flight
 FROM 'C:\Users\thaon\Downloads\flights.csv'
 WITH (
@@ -780,3 +784,5 @@ WITH (
     ROWTERMINATOR = '\n',
     FIRSTROW = 2
 );
+
+--SQL QUERIES
