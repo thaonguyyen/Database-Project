@@ -26,14 +26,14 @@ WHERE u.user_id IN (
     )
 );
 
--- Get all itineraries for Michael Johnson (JOIN)
+-- Get all itineraries for Michael Johnson (Join)
 SELECT * 
 FROM Itinerary I
 INNER JOIN Trip T ON I.trip_id = T.trip_id
 INNER JOIN [User] U ON T.user_id = U.user_id
 WHERE U.first_name = 'Michael' AND U.last_name = 'Johnson';
 
--- Find the three most expensive chosen hotel (JOIN)
+-- Find the three most expensive chosen hotel (Join)
 SELECT TOP 3 H.hotel_id, H.name, H.price_range, IPH.cost
 FROM Hotel H
 JOIN Itinerary_Picked_Hotel IPH ON IPH.hotel_id = H.hotel_id
@@ -55,7 +55,7 @@ WHERE EXISTS (
     AND F.airport_id = A.airport_id
 );
 
--- Find all activites in New York City with cost less than $100 (JOIN)
+-- Find all activites in New York City with cost less than $100 (Join)
 SELECT A.name, A.category, DA.cost
 FROM Activity A
 INNER JOIN Destination_Activity DA ON DA.activity_id = A.activity_id
@@ -71,7 +71,7 @@ FROM (
 ) AS RD
 GROUP BY RD.destination_id, RD.city, RD.[state]
 
--- Get the money spent on trips from each user that has a trip planned
+-- Get the money spent on trips from each user that has a trip planned (Aggregate & Join)
 SELECT U.user_id, SUM(total_cost) AS total_money_spent
 FROM [User] U
 JOIN Trip T ON T.user_id = U.user_id
