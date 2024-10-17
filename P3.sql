@@ -69,14 +69,12 @@ CREATE TABLE Itinerary (
 	destination_id BIGINT NOT NULL,
 	total_cost BIGINT,
    departure_airport_id VARCHAR(3) NOT NULL,
-   departure_flight_id BIGINT NOT NULL,
    arrival_airport_id VARCHAR(3) NOT NULL,
-   arrival_flight_id BIGINT NOT NULL,
+   flight_id BIGINT NOT NULL,
 	CONSTRAINT Itinerary_PK PRIMARY KEY (itinerary_id, trip_id),
 	CONSTRAINT Itinerary_Trip_FK FOREIGN KEY (trip_id) REFERENCES Trip(trip_id),
 	CONSTRAINT Itinerary_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
-	CONSTRAINT Departure_Airport_Flight_FK FOREIGN KEY (departure_airport_id, departure_flight_id) REFERENCES Flight(airport_id, flight_id),
-	CONSTRAINT Arrival_Airport_Flight_FK FOREIGN KEY (arrival_airport_id, arrival_flight_id) REFERENCES Flight(airport_id, flight_id)
+	CONSTRAINT Airport_Flight_FK FOREIGN KEY (departure_airport_id, flight_id) REFERENCES Flight(airport_id, flight_id)
 );
 
 CREATE TABLE Hotel (
@@ -789,6 +787,7 @@ WITH (
 );
 
 --SQL QUERIES
+--return entire trip for a specific user
 SELECT 
     u.first_name, u.last_name, t.trip_id, t.total_cost, t.number_of_people,
     i.itinerary_id, d.city AS destination_city, d.state AS destination_state,
@@ -796,7 +795,7 @@ SELECT
     a.name AS activity_name, ipa.duration AS activity_duration,
     f1.airport_id AS departure_airport, f1.flight_id AS flight_id, 
     f1.departure_time AS departure_time, f1.arrival_time AS arrival_time, 
-    f2.airport_id AS arrival_airport, f1.airline AS airline -- Add arrival airport
+    f1.arrival_airport_id AS arrival_airport, f1.airline AS airline
 FROM 
     Trip t
     JOIN [User] u ON t.user_id = u.user_id
@@ -806,12 +805,12 @@ FROM
     LEFT JOIN Hotel h ON iph.hotel_id = h.hotel_id
     LEFT JOIN Itinerary_Picked_Activity ipa ON i.itinerary_id = ipa.itinerary_id AND i.trip_id = ipa.trip_id
     LEFT JOIN Activity a ON ipa.activity_id = a.activity_id
-    LEFT JOIN Flight f1 ON i.departure_airport_id = f1.airport_id AND i.departure_flight_id = f1.flight_id
-    LEFT JOIN Flight f2 ON i.arrival_airport_id = f2.airport_id AND i.arrival_flight_id = f2.flight_id
+    LEFT JOIN Flight f1 ON i.flight_id = f1.flight_id 
 WHERE 
-    u.user_id = 7 -- Replace with the specific user_id
-    AND t.trip_id = 3 -- Replace with the specific trip_id
+    u.user_id = 15 -- replace with the specific user_id
+    AND t.trip_id = 7 -- replace with the specific trip_id
 ORDER BY 
     i.itinerary_id, ipa.activity_id, iph.hotel_id;
+
 
 
