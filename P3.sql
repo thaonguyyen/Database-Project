@@ -57,8 +57,10 @@ CREATE TABLE Flight (
 	departure_time TIME,
 	arrival_time TIME,
 	airline VARCHAR(50),
+   arrival_airport_id VARCHAR(3),
 	CONSTRAINT Flight_PK PRIMARY KEY (airport_id, flight_id),
-	CONSTRAINT Flight_Airport_FK FOREIGN KEY (airport_id) REFERENCES Airport(airport_id)
+	CONSTRAINT Flight_Airport_FK FOREIGN KEY (airport_id) REFERENCES Airport(airport_id),
+   CONSTRAINT Arrival_Airport_FK FOREIGN KEY (arrival_airport_id) REFERENCES Airport(airport_id)
 );
 
 CREATE TABLE Itinerary (
@@ -737,16 +739,17 @@ INSERT INTO Review (review_id, destination_id, user_id, star_rating, comment) VA
 
 --TABLE CSV INSERTIONS
 --must download locally then change file path
-BULK INSERT Flight
-FROM 'C:\Users\thaon\Downloads\flights.csv'
+BULK INSERT Hotel
+FROM 'C:\Users\thaon\Downloads\hotels.csv'
 WITH (
     FIELDTERMINATOR = ',',
     ROWTERMINATOR = '\n',
     FIRSTROW = 2
 );
 
-BULK INSERT Hotel
-FROM 'C:\Users\thaon\Downloads\hotels.csv'
+--hub and spoke structure with JFK, LAX, ORD, and IAH as central hubs
+BULK INSERT Flight
+FROM 'C:\Users\thaon\Downloads\flights.csv'
 WITH (
     FIELDTERMINATOR = ',',
     ROWTERMINATOR = '\n',
@@ -786,3 +789,29 @@ WITH (
 );
 
 --SQL QUERIES
+SELECT 
+    u.first_name, u.last_name, t.trip_id, t.total_cost, t.number_of_people,
+    i.itinerary_id, d.city AS destination_city, d.state AS destination_state,
+    h.name AS hotel_name, h.price_range AS hotel_price_range, iph.room_type, iph.cost AS hotel_cost,
+    a.name AS activity_name, ipa.duration AS activity_duration,
+    f1.airport_id AS departure_airport, f1.flight_id AS flight_id, 
+    f1.departure_time AS departure_time, f1.arrival_time AS arrival_time, 
+    f2.airport_id AS arrival_airport, f1.airline AS airline -- Add arrival airport
+FROM 
+    Trip t
+    JOIN [User] u ON t.user_id = u.user_id
+    JOIN Itinerary i ON t.trip_id = i.trip_id
+    JOIN Destination d ON i.destination_id = d.destination_id
+    LEFT JOIN Itinerary_Picked_Hotel iph ON i.itinerary_id = iph.itinerary_id AND i.trip_id = iph.trip_id
+    LEFT JOIN Hotel h ON iph.hotel_id = h.hotel_id
+    LEFT JOIN Itinerary_Picked_Activity ipa ON i.itinerary_id = ipa.itinerary_id AND i.trip_id = ipa.trip_id
+    LEFT JOIN Activity a ON ipa.activity_id = a.activity_id
+    LEFT JOIN Flight f1 ON i.departure_airport_id = f1.airport_id AND i.departure_flight_id = f1.flight_id
+    LEFT JOIN Flight f2 ON i.arrival_airport_id = f2.airport_id AND i.arrival_flight_id = f2.flight_id
+WHERE 
+    u.user_id = 7 -- Replace with the specific user_id
+    AND t.trip_id = 3 -- Replace with the specific trip_id
+ORDER BY 
+    i.itinerary_id, ipa.activity_id, iph.hotel_id;
+
+
