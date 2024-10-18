@@ -1,4 +1,147 @@
--- Insertion for Users
+--must run twice to drop all tables with foreign keys
+DROP TABLE IF EXISTS Itinerary_Picked_Activity;
+DROP TABLE IF EXISTS Destination_Activity;
+DROP TABLE IF EXISTS Itinerary_Picked_Hotel;
+DROP TABLE IF EXISTS Review;
+DROP TABLE IF EXISTS Flight;
+DROP TABLE IF EXISTS Hotel;
+DROP TABLE IF EXISTS Itinerary;
+DROP TABLE IF EXISTS Trip;
+DROP TABLE IF EXISTS Destination;
+DROP TABLE IF EXISTS Activity;
+DROP TABLE IF EXISTS Airport;
+DROP TABLE IF EXISTS [User];
+
+--TABLE CREATION
+CREATE TABLE [User] (
+	user_id BIGINT NOT NULL,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	email VARCHAR(50) NOT NULL,
+	[password] VARCHAR(50) NOT NULL,
+	city VARCHAR(50),
+	[state] VARCHAR(50),
+	date_of_birth DATE
+	CONSTRAINT User_PK PRIMARY KEY (user_id)
+);
+
+CREATE TABLE Trip (
+	trip_id BIGINT NOT NULL,
+	user_id BIGINT NOT NULL,
+	number_of_people INT,
+	total_cost BIGINT,
+	CONSTRAINT Trip_PK PRIMARY KEY (trip_id),
+	CONSTRAINT Trip_User_FK FOREIGN KEY (user_id) REFERENCES [User](user_id)
+);
+
+CREATE TABLE Airport (
+	airport_id VARCHAR(3),
+	[name] VARCHAR(100),
+	city VARCHAR(50),
+	[state] VARCHAR(50),
+	CONSTRAINT Airport_PK PRIMARY KEY (airport_id)
+);
+
+CREATE TABLE Destination (
+	destination_id BIGINT NOT NULL,
+	city VARCHAR(50) NOT NULL,
+	[state] VARCHAR(50) NOT NULL,
+	airport_id VARCHAR(3) NOT NULL,
+	CONSTRAINT Destination_PK PRIMARY KEY (destination_id),
+	CONSTRAINT Destination_Airport_FK FOREIGN KEY (airport_id) REFERENCES Airport(airport_id)
+);
+
+CREATE TABLE Flight (
+	airport_id VARCHAR(3) NOT NULL,
+	flight_id BIGINT NOT NULL,
+	departure_time TIME,
+	arrival_time TIME,
+	airline VARCHAR(50),
+   arrival_airport_id VARCHAR(3),
+	CONSTRAINT Flight_PK PRIMARY KEY (airport_id, flight_id),
+	CONSTRAINT Flight_Airport_FK FOREIGN KEY (airport_id) REFERENCES Airport(airport_id),
+   CONSTRAINT Arrival_Airport_FK FOREIGN KEY (arrival_airport_id) REFERENCES Airport(airport_id)
+);
+
+CREATE TABLE Itinerary (
+	itinerary_id BIGINT NOT NULL,
+	trip_id BIGINT NOT NULL,
+	destination_id BIGINT NOT NULL,
+	total_cost BIGINT,
+   departure_airport_id VARCHAR(3) NOT NULL,
+   arrival_airport_id VARCHAR(3) NOT NULL,
+   flight_id BIGINT NOT NULL,
+	CONSTRAINT Itinerary_PK PRIMARY KEY (itinerary_id, trip_id),
+	CONSTRAINT Itinerary_Trip_FK FOREIGN KEY (trip_id) REFERENCES Trip(trip_id),
+	CONSTRAINT Itinerary_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
+	CONSTRAINT Airport_Flight_FK FOREIGN KEY (departure_airport_id, flight_id) REFERENCES Flight(airport_id, flight_id)
+);
+
+CREATE TABLE Hotel (
+	hotel_id BIGINT NOT NULL,
+	destination_id BIGINT NOT NULL,
+	[name] VARCHAR(100),
+	price_range VARCHAR(3),
+	CONSTRAINT Hotel_PK PRIMARY KEY (hotel_id),
+	CONSTRAINT Hotel_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
+	CONSTRAINT Price_Range CHECK (price_range = '$' OR price_range = '$$' OR price_range = '$$$')
+);
+
+CREATE TABLE Itinerary_Picked_Hotel (
+	itinerary_id BIGINT NOT NULL,
+	trip_id BIGINT NOT NULL,
+	destination_id BIGINT NOT NULL,
+	hotel_id BIGINT NOT NULL,
+	room_type VARCHAR(50),
+	cost BIGINT,
+	CONSTRAINT Itinerary_Picked_PK PRIMARY KEY (itinerary_id, trip_id, destination_id, hotel_id),
+	CONSTRAINT Itinerary_Picked_FK FOREIGN KEY (itinerary_id, trip_id) REFERENCES Itinerary(itinerary_id, trip_id),
+	CONSTRAINT Itinerary_Picked_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
+	CONSTRAINT Itinerary_Picked_Hotel_FK FOREIGN KEY (hotel_id) REFERENCES Hotel(hotel_id),
+	CONSTRAINT Room_Type CHECK (room_type = 'single' OR room_type = 'double' OR room_type = 'twin' OR room_type = 'suite' OR room_type = 'deluxe')
+);
+
+CREATE TABLE Activity (
+	activity_id BIGINT NOT NULL,
+	[name] VARCHAR(100),
+	category VARCHAR(50),
+	CONSTRAINT Activity_PK PRIMARY KEY (activity_id)
+);
+
+CREATE TABLE Destination_Activity (
+	destination_id BIGINT NOT NULL,
+	activity_id BIGINT NOT NULL,
+	cost BIGINT,
+	CONSTRAINT Destination_Activity_PK PRIMARY KEY (destination_id, activity_id),
+	CONSTRAINT Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
+	CONSTRAINT Activity_FK FOREIGN KEY (activity_id) REFERENCES Activity(activity_id)
+);
+
+CREATE TABLE Itinerary_Picked_Activity (
+	itinerary_id BIGINT NOT NULL,
+	trip_id BIGINT NOT NULL,
+	destination_id BIGINT NOT NULL,
+	activity_id BIGINT NOT NULL,
+	duration INT,
+	CONSTRAINT Itinerary_Picked_Activity_PK PRIMARY KEY (itinerary_id, destination_id, activity_id),
+	CONSTRAINT Itinerary_Picked_Acitivity_FK FOREIGN KEY (itinerary_id, trip_id) REFERENCES Itinerary(itinerary_id, trip_id),
+	CONSTRAINT Picked_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
+	CONSTRAINT Picked_Activity_FK FOREIGN KEY (activity_id) REFERENCES Activity(activity_id)
+);
+
+CREATE TABLE Review (
+	review_id BIGINT NOT NULL,
+	destination_id BIGINT NOT NULL,
+	user_id BIGINT NOT NULL,
+	star_rating INT,
+	comment VARCHAR(200),
+	CONSTRAINT Review_PK PRIMARY KEY (review_id, destination_id),
+	CONSTRAINT Review_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
+	CONSTRAINT Review_User_FK FOREIGN KEY (user_id) REFERENCES [User](user_id),
+	CONSTRAINT Star_Rating CHECK (star_rating >= 1 AND star_rating <= 5)
+);
+
+--TABLE MANUAL INSERTIONS
 INSERT INTO [User] (user_id, first_name, last_name, email, [password], city, [state], date_of_birth) VALUES
    (1, 'Jeff', 'Cooper', 'jeff.cooper@gmail.com', '2jR^h8W$zQv', 'New York', 'NY', '1990-05-12'),
    (2, 'Allison', 'Jones', 'allison.jones.com', 'P@5sW0rd$8H!v', 'Los Angeles', 'CA', '1988-09-30'),
@@ -17,7 +160,7 @@ INSERT INTO [User] (user_id, first_name, last_name, email, [password], city, [st
    (15, 'James', 'Hernandez', 'james.hernandez@live.com', 'J8@kQ2#nV5%t', 'Fort Worth', 'TX', '1993-12-05'),
    (16, 'Olivia', 'Lopez', 'olivia.lopez@yahoo.com', '6!mN4#V9$yT8', 'Indianapolis', 'IN', '1989-03-29'),
    (17, 'William', 'Gonzalez', 'william.gonzalez@gmail.com', '8&zF7*R6@vQ5', 'Seattle', 'WA', '1991-10-15'),
-   (18, 'Sophia', 'Perez', 'sophia.perez@hotmail.com', '2Q^6f!T9$kM4', 'Denver', 'CO', '1995-01-23'),
+   (18, 'Sophia', 'Perez', 'sophia.perez@hotmfail.com', '2Q^6f!T9$kM4', 'Denver', 'CO', '1995-01-23'),
    (19, 'Benjamin', 'Young', 'benjamin.young@aol.com', 'T1!cN8$wY5&z', 'El Paso', 'TX', '1992-02-05'),
    (20, 'Mia', 'Hall', 'mia.hall@live.com', 'W3^tY9#vQ7*F', 'Washington', 'DC', '1990-04-13'),
    (21, 'Alexander', 'King', 'alexander.king@gmail.com', 'M5@dY2%qR8^n', 'Boston', 'MA', '1988-06-27'),
@@ -71,7 +214,7 @@ INSERT INTO [User] (user_id, first_name, last_name, email, [password], city, [st
    (69, 'Savannah', 'Wright', 'savannah.wright@live.com', 'D6!kT1^hP9&r', 'Fort Worth', 'TX', '1994-06-09'),
    (70, 'David', 'Lopez', 'david.lopez@gmail.com', 'P8@zK6*wQ4^h', 'Boston', 'MA', '1988-03-14');
 
--- Insertion for Airport
+-- closest airport to each destination
 INSERT INTO Airport (airport_id, [name], city, [state]) VALUES
    ('JFK', 'John F. Kennedy International Airport', 'New York City', 'New York'),
    ('LAX', 'Los Angeles International Airport', 'Los Angeles', 'California'),
@@ -104,7 +247,40 @@ INSERT INTO Airport (airport_id, [name], city, [state]) VALUES
    ('SDF', 'Louisville Muhammad Ali International Airport', 'Louisville', 'Kentucky'),
    ('BWI', 'Baltimore/Washington International Thurgood Marshall Airport', 'Baltimore', 'Maryland');
 
--- Insertion for Activity
+-- top 30 largest and popular cities in the US
+INSERT INTO Destination (destination_id, city, [state], airport_id) VALUES
+   (1, 'New York City', 'New York', 'JFK'),
+   (2, 'Los Angeles', 'California', 'LAX'),
+   (3, 'Chicago', 'Illinois', 'ORD'),
+   (4, 'Houston', 'Texas', 'IAH'),
+   (5, 'Phoenix', 'Arizona', 'PHX'),
+   (6, 'Philadelphia', 'Pennsylvania', 'PHL'),
+   (7, 'San Antonio', 'Texas', 'SAT'),
+   (8, 'San Diego', 'California', 'SAN'),
+   (9, 'Miami', 'Florida', 'MIA'),
+   (10, 'San Jose', 'California', 'SJC'),
+   (11, 'Austin', 'Texas', 'AUS'),
+   (12, 'Orlando', 'Florida', 'MCO'),
+   (13, 'Dallas', 'Texas', 'DFW'),
+   (14, 'Columbus', 'Ohio', 'CMH'),
+   (15, 'Charlotte', 'North Carolina', 'CLT'),
+   (16, 'San Francisco', 'California', 'SFO'),
+   (17, 'Indianapolis', 'Indiana', 'IND'),
+   (18, 'Seattle', 'Washington', 'SEA'),
+   (19, 'Denver', 'Colorado', 'DEN'),
+   (20, 'Washington', 'District of Columbia', 'IAD'),
+   (21, 'Boston', 'Massachusetts', 'BOS'),
+   (22, 'El Paso', 'Texas', 'ELP'),
+   (23, 'Nashville', 'Tennessee', 'BNA'),
+   (24, 'Detroit', 'Michigan', 'DTW'),
+   (25, 'Las Vegas', 'Nevada', 'LAS'),
+   (26, 'Portland', 'Oregon', 'PDX'),
+   (27, 'Memphis', 'Tennessee', 'MEM'),
+   (28, 'Oklahoma City', 'Oklahoma', 'OKC'),
+   (29, 'Louisville', 'Kentucky', 'SDF'),
+   (30, 'Baltimore', 'Maryland', 'BWI');
+
+--3 most popular activities for each destination
 INSERT INTO Activity (activity_id, name, category) VALUES
     -- New York City
     (1, 'Visit the Statue of Liberty', 'Sightseeing'),
@@ -256,191 +432,156 @@ INSERT INTO Activity (activity_id, name, category) VALUES
     (89, 'Explore Fort McHenry', 'Historical'),
     (90, 'Visit the Baltimore Museum of Art', 'Cultural');
 
--- Insertion for Destination
-INSERT INTO Destination (destination_id, city, [state], airport_id) VALUES
-   (1, 'New York City', 'New York', 'JFK'),
-   (2, 'Los Angeles', 'California', 'LAX'),
-   (3, 'Chicago', 'Illinois', 'ORD'),
-   (4, 'Houston', 'Texas', 'IAH'),
-   (5, 'Phoenix', 'Arizona', 'PHX'),
-   (6, 'Philadelphia', 'Pennsylvania', 'PHL'),
-   (7, 'San Antonio', 'Texas', 'SAT'),
-   (8, 'San Diego', 'California', 'SAN'),
-   (9, 'Miami', 'Florida', 'MIA'),
-   (10, 'San Jose', 'California', 'SJC'),
-   (11, 'Austin', 'Texas', 'AUS'),
-   (12, 'Orlando', 'Florida', 'MCO'),
-   (13, 'Dallas', 'Texas', 'DFW'),
-   (14, 'Columbus', 'Ohio', 'CMH'),
-   (15, 'Charlotte', 'North Carolina', 'CLT'),
-   (16, 'San Francisco', 'California', 'SFO'),
-   (17, 'Indianapolis', 'Indiana', 'IND'),
-   (18, 'Seattle', 'Washington', 'SEA'),
-   (19, 'Denver', 'Colorado', 'DEN'),
-   (20, 'Washington', 'District of Columbia', 'IAD'),
-   (21, 'Boston', 'Massachusetts', 'BOS'),
-   (22, 'El Paso', 'Texas', 'ELP'),
-   (23, 'Nashville', 'Tennessee', 'BNA'),
-   (24, 'Detroit', 'Michigan', 'DTW'),
-   (25, 'Las Vegas', 'Nevada', 'LAS'),
-   (26, 'Portland', 'Oregon', 'PDX'),
-   (27, 'Memphis', 'Tennessee', 'MEM'),
-   (28, 'Oklahoma City', 'Oklahoma', 'OKC'),
-   (29, 'Louisville', 'Kentucky', 'SDF'),
-   (30, 'Baltimore', 'Maryland', 'BWI');
-
--- Insertion for Destination_Activity
 INSERT INTO Destination_Activity (destination_id, activity_id, cost) VALUES
-    (1, 1, 250), -- Visit the Statue of Liberty
-    (1, 2, 0),   -- Explore Central Park
-    (1, 3, 150), -- See a Broadway Show
+	(1, 1, 250), -- Visit the Statue of Liberty
+	(1, 2, 0),   -- Explore Central Park
+	(1, 3, 150), -- See a Broadway Show
 
-    -- Los Angeles
-    (2, 4, 200), -- Tour Hollywood Studios
-    (2, 5, 0),   -- Relax at Santa Monica Beach
-    (2, 6, 50),  -- Visit Griffith Observatory
+   -- Los Angeles
+	(2, 4, 200), -- Tour Hollywood Studios
+	(2, 5, 0),   -- Relax at Santa Monica Beach
+	(2, 6, 50),  -- Visit Griffith Observatory
 
-    -- Chicago
-    (3, 7, 25),  -- Visit the Art Institute of Chicago
-    (3, 8, 0),   -- Explore Millennium Park
-    (3, 9, 40),  -- Take an Architecture River Cruise
+   -- Chicago
+	(3, 7, 25),  -- Visit the Art Institute of Chicago
+	(3, 8, 0),   -- Explore Millennium Park
+	(3, 9, 40),  -- Take an Architecture River Cruise
 
-    -- Houston
-    (4, 10, 100), -- Visit Space Center Houston
-    (4, 11, 20),  -- Explore the Houston Museum District
-    (4, 12, 0),   -- Relax in Hermann Park
+   -- Houston
+	(4, 10, 100), -- Visit Space Center Houston
+	(4, 11, 20),  -- Explore the Houston Museum District
+	(4, 12, 0),   -- Relax in Hermann Park
 
-    -- Phoenix
-    (5, 13, 0),   -- Hike Camelback Mountain
-    (5, 14, 30),  -- Visit the Desert Botanical Garden
-    (5, 15, 20),  -- Explore the Heard Museum
+   -- Phoenix
+	(5, 13, 0),   -- Hike Camelback Mountain
+	(5, 14, 30),  -- Visit the Desert Botanical Garden
+	(5, 15, 20),  -- Explore the Heard Museum
 
-    -- Philadelphia
-    (6, 16, 0),   -- Visit the Liberty Bell
-    (6, 17, 25),  -- Explore the Philadelphia Museum of Art
-    (6, 18, 0),   -- Walk the Schuylkill River Trail
+   -- Philadelphia
+	(6, 16, 0),   -- Visit the Liberty Bell
+	(6, 17, 25),  -- Explore the Philadelphia Museum of Art
+	(6, 18, 0),   -- Walk the Schuylkill River Trail
 
-    -- San Antonio
-    (7, 19, 0),   -- Visit the Alamo
-    (7, 20, 0),   -- Explore the River Walk
-    (7, 21, 30),  -- Visit the San Antonio Missions
+   -- San Antonio
+	(7, 19, 0),   -- Visit the Alamo
+	(7, 20, 0),   -- Explore the River Walk
+	(7, 21, 30),  -- Visit the San Antonio Missions
 
-    -- San Diego
-    (8, 22, 0),   -- Relax at Balboa Park
-    (8, 23, 60),  -- Visit the San Diego Zoo
-    (8, 24, 0),   -- Explore La Jolla Cove
+   -- San Diego
+	(8, 22, 0),   -- Relax at Balboa Park
+	(8, 23, 60),  -- Visit the San Diego Zoo
+	(8, 24, 0),   -- Explore La Jolla Cove
 
-    -- Miami
-    (9, 25, 0),   -- Relax at South Beach
-    (9, 26, 20),  -- Explore Art Deco Historic District
-    (9, 27, 18),  -- Visit Vizcaya Museum and Gardens
+   -- Miami
+	(9, 25, 0),   -- Relax at South Beach
+	(9, 26, 20),  -- Explore Art Deco Historic District
+	(9, 27, 18),  -- Visit Vizcaya Museum and Gardens
 
-    -- San Jose
-    (10, 28, 25), -- Visit the Tech Museum of Innovation
-    (10, 29, 35), -- Explore the Winchester Mystery House
-    (10, 30, 0),  -- Relax at Almaden Quicksilver County Park
+   -- San Jose
+	(10, 28, 25), -- Visit the Tech Museum of Innovation
+	(10, 29, 35), -- Explore the Winchester Mystery House
+	(10, 30, 0),  -- Relax at Almaden Quicksilver County Park
 
-    -- Austin
-    (11, 31, 0),  -- Visit the Texas State Capitol
-    (11, 32, 0),  -- Explore Lady Bird Lake
-    (11, 33, 50), -- Experience live music on Sixth Street
+   -- Austin
+	(11, 31, 0),  -- Visit the Texas State Capitol
+	(11, 32, 0),  -- Explore Lady Bird Lake
+	(11, 33, 50), -- Experience live music on Sixth Street
 
-    -- Orlando
-    (12, 34, 150), -- Visit Walt Disney World
-    (12, 35, 120), -- Explore Universal Studios
-    (12, 36, 0),   -- Relax at Lake Eola Park
+   -- Orlando
+	(12, 34, 150), -- Visit Walt Disney World
+	(12, 35, 120), -- Explore Universal Studios
+	(12, 36, 0),   -- Relax at Lake Eola Park
 
-    -- Dallas
-    (13, 37, 15),  -- Visit the Sixth Floor Museum
-    (13, 38, 30),  -- Explore the Dallas Arboretum
-    (13, 39, 20),  -- Visit the Perot Museum of Nature and Science
+   -- Dallas
+	(13, 37, 15),  -- Visit the Sixth Floor Museum
+	(13, 38, 30),  -- Explore the Dallas Arboretum
+	(13, 39, 20),  -- Visit the Perot Museum of Nature and Science
 
-    -- Columbus
-    (14, 40, 50),  -- Explore the Columbus Zoo and Aquarium
-    (14, 41, 20),  -- Visit COSI Columbus
-    (14, 42, 0),   -- Relax at Franklin Park Conservatory
+   -- Columbus
+	(14, 40, 50),  -- Explore the Columbus Zoo and Aquarium
+	(14, 41, 20),  -- Visit COSI Columbus
+	(14, 42, 0),   -- Relax at Franklin Park Conservatory
 
-    -- Charlotte
-    (15, 43, 25),  -- Visit the NASCAR Hall of Fame
-    (15, 44, 0),   -- Explore Freedom Park
-    (15, 45, 40),  -- Visit the U.S. National Whitewater Center
+   -- Charlotte
+	(15, 43, 25),  -- Visit the NASCAR Hall of Fame
+	(15, 44, 0),   -- Explore Freedom Park
+	(15, 45, 40),  -- Visit the U.S. National Whitewater Center
 
-    -- San Francisco
-    (16, 46, 35),  -- Visit Alcatraz Island
-    (16, 47, 0),   -- Explore Golden Gate Park
-    (16, 48, 0),   -- Walk across the Golden Gate Bridge
+   -- San Francisco
+	(16, 46, 35),  -- Visit Alcatraz Island
+	(16, 47, 0),   -- Explore Golden Gate Park
+	(16, 48, 0),   -- Walk across the Golden Gate Bridge
 
-    -- Indianapolis
-    (17, 49, 25),  -- Visit the Indianapolis Motor Speedway
-    (17, 50, 0),   -- Explore White River State Park
-    (17, 51, 20),  -- Visit the Indianapolis Museum of Art
+   -- Indianapolis
+	(17, 49, 25),  -- Visit the Indianapolis Motor Speedway
+	(17, 50, 0),   -- Explore White River State Park
+	(17, 51, 20),  -- Visit the Indianapolis Museum of Art
 
-    -- Seattle
-    (18, 52, 40),  -- Visit the Space Needle
-    (18, 53, 0),   -- Explore Pike Place Market
-    (18, 54, 0),   -- Take a ferry to Bainbridge Island
+   -- Seattle
+	(18, 52, 40),  -- Visit the Space Needle
+	(18, 53, 0),   -- Explore Pike Place Market
+	(18, 54, 0),   -- Take a ferry to Bainbridge Island
 
-    -- Denver
-    (19, 55, 20),  -- Visit the Denver Art Museum
-    (19, 56, 0),   -- Explore Red Rocks Park and Amphitheatre
-    (19, 57, 200), -- Ski in the Rocky Mountains
+   -- Denver
+	(19, 55, 20),  -- Visit the Denver Art Museum
+	(19, 56, 0),   -- Explore Red Rocks Park and Amphitheatre
+	(19, 57, 200), -- Ski in the Rocky Mountains
 
-    -- Washington D.C.
-    (20, 58, 0),   -- Visit the National Mall
-    (20, 59, 0),   -- Explore the Smithsonian Museums
-    (20, 60, 0),   -- Tour the U.S. Capitol
+   -- Washington D.C.
+	(20, 58, 0),   -- Visit the National Mall
+	(20, 59, 0),   -- Explore the Smithsonian Museums
+	(20, 60, 0),   -- Tour the U.S. Capitol
 
-    -- Boston
-    (21, 61, 0),   -- Walk the Freedom Trail
-    (21, 62, 25),  -- Visit the Boston Museum of Fine Arts
-    (21, 63, 0),   -- Explore Boston Common
+   -- Boston
+	(21, 61, 0),   -- Walk the Freedom Trail
+	(21, 62, 25),  -- Visit the Boston Museum of Fine Arts
+	(21, 63, 0),   -- Explore Boston Common
 
-    -- El Paso  
-    (22, 64, 15),  -- Visit the El Paso Museum of Art
-    (22, 65, 0),   -- Explore the Franklin Mountains State Park
-    (22, 66, 10),  -- Visit the El Paso Zoo
+   -- El Paso
+	(22, 64, 15),  -- Visit the El Paso Museum of Art
+	(22, 65, 0),   -- Explore the Franklin Mountains State Park
+	(22, 66, 10),  -- Visit the El Paso Zoo
 
-    -- Nashville
-    (23, 67, 30),  -- Visit the Country Music Hall of Fame
-    (23, 68, 0),   -- Experience live music on Broadway
-    (23, 69, 0),   -- Explore the Parthenon in Centennial Park
+   -- Nashville
+	(23, 67, 30),  -- Visit the Country Music Hall of Fame
+	(23, 68, 0),   -- Experience live music on Broadway
+	(23, 69, 0),   -- Explore the Parthenon in Centennial Park
 
-    -- Detroit
-    (24, 70, 20),  -- Visit the Henry Ford Museum
-    (24, 71, 0),   -- Explore Belle Isle Park
-    (24, 72, 15),  -- Visit the Detroit Institute of Arts
+   -- Detroit
+	(24, 70, 20),  -- Visit the Henry Ford Museum
+	(24, 71, 0),   -- Explore Belle Isle Park
+	(24, 72, 15),  -- Visit the Detroit Institute of Arts
 
-    -- Las Vegas
-    (25, 73, 0),   -- Visit the Las Vegas Strip
-    (25, 74, 100), -- See a Cirque du Soleil Show
-    (25, 75, 0),   -- Explore Red Rock Canyon
+   -- Las Vegas
+	(25, 73, 0),   -- Visit the Las Vegas Strip
+	(25, 74, 100), -- See a Cirque du Soleil Show
+	(25, 75, 0),   -- Explore Red Rock Canyon
 
-    -- Portland 
-    (26, 76, 25),  -- Visit the Portland Art Museum
-    (26, 77, 0),   -- Explore Washington Park
-    (26, 78, 18),  -- Visit the Oregon Zoo
+   -- Portland
+	(26, 76, 25),  -- Visit the Portland Art Museum
+	(26, 77, 0),   -- Explore Washington Park
+	(26, 78, 18),  -- Visit the Oregon Zoo
 
-    -- Memphis
-    (27, 79, 40),  -- Visit Graceland
-    (27, 80, 0),   -- Explore Beale Street
-    (27, 81, 25),  -- Visit the National Civil Rights Museum
+   -- Memphis
+	(27, 79, 40),  -- Visit Graceland
+	(27, 80, 0),   -- Explore Beale Street
+	(27, 81, 25),  -- Visit the National Civil Rights Museum
 
-    -- Oklahoma City
-    (28, 82, 20),  -- Visit the National Cowboy & Western Heritage Museum
-    (28, 83, 0),   -- Explore Myriad Botanical Gardens
-    (28, 84, 0),   -- Visit the Oklahoma City National Memorial
+   -- Oklahoma City
+	(28, 82, 20),  -- Visit the National Cowboy & Western Heritage Museum
+	(28, 83, 0),   -- Explore Myriad Botanical Gardens
+	(28, 84, 0),   -- Visit the Oklahoma City National Memorial
 
-    -- Louisville
-    (29, 85, 15),  -- Visit the Muhammad Ali Center
-    (29, 86, 30),  -- Explore the Louisville Mega Cavern
-    (29, 87, 120), -- Experience the Kentucky Derby
+   -- Louisville
+	(29, 85, 15),  -- Visit the Muhammad Ali Center
+	(29, 86, 30),  -- Explore the Louisville Mega Cavern
+	(29, 87, 120), -- Experience the Kentucky Derby
 
-    -- Baltimore
-    (30, 88, 25),  -- Visit the National Aquarium
-    (30, 89, 0),   -- Explore Fort McHenry
-    (30, 90, 20);  -- Visit the Baltimore Museum of Art
+   -- Baltimore
+	(30, 88, 25),  -- Visit the National Aquarium
+	(30, 89, 0),   -- Explore Fort McHenry
+	(30, 90, 20);  -- Visit the Baltimore Museum of Art
 
--- Insertion for Review
 INSERT INTO Review (review_id, destination_id, user_id, star_rating, comment) VALUES
     -- New York City, New York
     (1, 1, 1, '5', 'Amazing experience in New York! The hotel was fantastic, and the food options were endless.'),
@@ -688,7 +829,7 @@ INSERT INTO Hotel (hotel_id, destination_id, name, price_range) VALUES
 -- TABLE CSV INSERTIONS
 -- must download locally then change file path
 BULK INSERT Flight
-FROM '/tmp/flight.csv'
+FROM '/tmp/flights.csv'
 WITH (
     FIELDTERMINATOR = ',',
     ROWTERMINATOR = '\n',
@@ -727,3 +868,91 @@ WITH (
     FIRSTROW = 2
 );
 
+--SQL QUERIES
+-- How many people are traveling to New York (Aggregate & Subquery & Join)
+SELECT COUNT(*) AS number_traveling_to_new_york
+FROM (
+    SELECT I.trip_id
+    FROM Itinerary I
+    INNER JOIN Destination D ON I.destination_id = D.destination_id
+    WHERE D.[state] = 'New York'
+    GROUP BY I.trip_id
+) AS NY_traveled;
+
+-- Who are all staying hotels with the highest price range (Subquery & Join)
+SELECT DISTINCT u.first_name, u.last_name
+FROM [User] u
+WHERE u.user_id IN (
+    SELECT user_id
+    FROM Trip T
+    WHERE T.trip_id IN (
+        SELECT trip_id 
+        FROM Itinerary I
+        WHERE I.itinerary_id IN (
+            SELECT itinerary_id
+            FROM Itinerary_Picked_Hotel IH
+            INNER JOIN Hotel H ON H.hotel_id = IH.hotel_id
+            WHERE H.price_range = '$$$'
+        )
+    )
+);
+
+-- Get all itineraries for Michael Johnson (Join)
+SELECT * 
+FROM Itinerary I
+INNER JOIN Trip T ON I.trip_id = T.trip_id
+INNER JOIN [User] U ON T.user_id = U.user_id
+WHERE U.first_name = 'Michael' AND U.last_name = 'Johnson';
+
+-- Find the three most expensive chosen hotel (Join)
+SELECT TOP 3 H.hotel_id, H.name, H.price_range, IPH.cost
+FROM Hotel H
+JOIN Itinerary_Picked_Hotel IPH ON IPH.hotel_id = H.hotel_id
+ORDER BY IPH.cost DESC
+
+-- Find the average cost of each hotel chosen (Aggregate & Join)
+SELECT H.hotel_id, H.name, H.price_range, AVG(cost) AS average_cost
+FROM Hotel H
+JOIN Itinerary_Picked_Hotel IPH ON IPH.hotel_id = H.hotel_id
+GROUP BY H.hotel_id, H.name, H.price_range;
+
+-- Find all flights from Texas (Subquery)
+SELECT DISTINCT F.airport_id, F.flight_id, F.departure_time, F.arrival_time, F.airline
+FROM Flight F
+WHERE EXISTS (
+    SELECT 1
+    FROM Airport A
+    WHERE A.[state] = 'Texas'
+    AND F.airport_id = A.airport_id
+);
+
+-- Find all activites in New York City with cost less than $100 (Join)
+SELECT A.name, A.category, DA.cost
+FROM Activity A
+INNER JOIN Destination_Activity DA ON DA.activity_id = A.activity_id
+INNER JOIN Destination D ON DA.destination_id = D.destination_id
+WHERE D.city = 'New York City' AND DA.cost < 100;
+
+-- Find the average rating for each destination (Subquery & Join & Aggregate)
+SELECT RD.city, RD.[state], AVG(RD.star_rating) AS avg_rating
+FROM (
+    SELECT R.destination_id, D.city, D.[state], R.star_rating
+    FROM Review R
+    JOIN Destination D ON D.destination_id = R.destination_id
+) AS RD
+GROUP BY RD.destination_id, RD.city, RD.[state]
+
+-- Get the money spent on trips from each user that has a trip planned (Aggregate & Join)
+SELECT U.user_id, SUM(total_cost) AS total_money_spent
+FROM [User] U
+JOIN Trip T ON T.user_id = U.user_id
+GROUP BY U.user_id;
+
+-- Who spends the most time on activites (Aggregate & Join)
+SELECT TOP 1 U.user_id, U.first_name, U.last_name, SUM(duration) AS total_time_spent
+FROM [User] U
+JOIN Trip T ON T.user_id = U.user_id
+JOIN Itinerary I ON T.trip_id = I.trip_id
+JOIN Itinerary_Picked_Activity IPA ON IPA.itinerary_id = I.itinerary_id
+GROUP BY U.user_id, U.first_name, U.last_name
+ORDER BY SUM(IPA.duration) DESC;
