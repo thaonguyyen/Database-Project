@@ -1,3 +1,4 @@
+--TABLE CREATION
 CREATE TABLE [User] (
 	user_id BIGINT NOT NULL,
 	first_name VARCHAR(50) NOT NULL,
@@ -13,8 +14,6 @@ CREATE TABLE [User] (
 CREATE TABLE Trip (
 	trip_id BIGINT NOT NULL,
 	user_id BIGINT NOT NULL,
-	[start_date] DATE,
-	end_date DATE,
 	number_of_people INT,
 	total_cost BIGINT,
 	CONSTRAINT Trip_PK PRIMARY KEY (trip_id),
@@ -41,36 +40,33 @@ CREATE TABLE Destination (
 CREATE TABLE Flight (
 	airport_id VARCHAR(3) NOT NULL,
 	flight_id BIGINT NOT NULL,
-	[date] DATE,
-	department_time TIME,
+	departure_time TIME,
 	arrival_time TIME,
 	airline VARCHAR(50),
+   arrival_airport_id VARCHAR(3),
 	CONSTRAINT Flight_PK PRIMARY KEY (airport_id, flight_id),
-	CONSTRAINT Flight_Airport_FK FOREIGN KEY (airport_id) REFERENCES Airport(airport_id)
+	CONSTRAINT Flight_Airport_FK FOREIGN KEY (airport_id) REFERENCES Airport(airport_id),
+   CONSTRAINT Arrival_Airport_FK FOREIGN KEY (arrival_airport_id) REFERENCES Airport(airport_id)
 );
 
 CREATE TABLE Itinerary (
 	itinerary_id BIGINT NOT NULL,
 	trip_id BIGINT NOT NULL,
 	destination_id BIGINT NOT NULL,
-	[start_date] DATE,
-	end_date DATE,
 	total_cost BIGINT,
-    arrival_airport_id VARCHAR(3) NOT NULL,
-    arrival_flight_id BIGINT NOT NULL,
-    departure_airport_id VARCHAR(3) NOT NULL,
-    departure_flight_id BIGINT NOT NULL,
+   departure_airport_id VARCHAR(3) NOT NULL,
+   arrival_airport_id VARCHAR(3) NOT NULL,
+   flight_id BIGINT NOT NULL,
 	CONSTRAINT Itinerary_PK PRIMARY KEY (itinerary_id, trip_id),
 	CONSTRAINT Itinerary_Trip_FK FOREIGN KEY (trip_id) REFERENCES Trip(trip_id),
 	CONSTRAINT Itinerary_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
-	CONSTRAINT Departure_Airport_Flight_FK FOREIGN KEY (departure_airport_id, departure_flight_id) REFERENCES Flight(airport_id, flight_id),
-	CONSTRAINT Arrival_Airport_Flight_FK FOREIGN KEY (arrival_airport_id, arrival_flight_id) REFERENCES Flight(airport_id, flight_id)
+	CONSTRAINT Airport_Flight_FK FOREIGN KEY (departure_airport_id, flight_id) REFERENCES Flight(airport_id, flight_id)
 );
 
 CREATE TABLE Hotel (
 	hotel_id BIGINT NOT NULL,
 	destination_id BIGINT NOT NULL,
-	[name] VARCHAR(50),
+	[name] VARCHAR(100),
 	price_range VARCHAR(3),
 	CONSTRAINT Hotel_PK PRIMARY KEY (hotel_id),
 	CONSTRAINT Hotel_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
@@ -93,7 +89,7 @@ CREATE TABLE Itinerary_Picked_Hotel (
 
 CREATE TABLE Activity (
 	activity_id BIGINT NOT NULL,
-	[name] VARCHAR(50),
+	[name] VARCHAR(100),
 	category VARCHAR(50),
 	CONSTRAINT Activity_PK PRIMARY KEY (activity_id)
 );
@@ -123,7 +119,7 @@ CREATE TABLE Review (
 	review_id BIGINT NOT NULL,
 	destination_id BIGINT NOT NULL,
 	user_id BIGINT NOT NULL,
-	star_rating VARCHAR(5),
+	star_rating INT,
 	comment VARCHAR(200),
 	CONSTRAINT Review_PK PRIMARY KEY (review_id, destination_id),
 	CONSTRAINT Review_Destination_FK FOREIGN KEY (destination_id) REFERENCES Destination(destination_id),
