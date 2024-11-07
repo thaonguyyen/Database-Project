@@ -16,7 +16,6 @@ CREATE VIEW GetALLUsersWithPlannedTravel AS
 SELECT U.user_id, U.first_name, U.last_name, COUNT(T.trip_id) AS total_trips, SUM(T.total_cost) AS total_cost
 FROM [User] U
 INNER JOIN Trip T ON U.user_id = T.user_id
-INNER JOIN Itinerary I ON T.trip_id = I.trip_id
 GROUP BY U.user_id, U.first_name, U.last_name
 GO
 
