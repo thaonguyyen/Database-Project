@@ -13,4 +13,11 @@ ENCRYPTION BY CERTIFICATE PasswordCert;
 
 --add column for encrypted data
 ALTER TABLE [User]
-ADD encrypted_password VARBINARY(50);
+ALTER COLUMN encrypted_password VARBINARY(120);
+
+--populate encrypted_password using encryption
+OPEN SYMMETRIC KEY PasswordKey
+DECRYPTION BY CERTIFICATE PasswordCert;
+UPDATE [User]
+SET encrypted_password = EncryptByKey(Key_GUID('PasswordKey'), [password]);
+CLOSE SYMMETRIC KEY PasswordKey;
