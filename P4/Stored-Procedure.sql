@@ -14,20 +14,6 @@ BEGIN
 END;
 GO
 
-
--- Retrieves all details related to a specific trip, including destinations, hotels, activities, and total costs. Allows users to review their trip details before finalizing plans.
--- CREATE PROCEDURE GetTripDetails
---    @trip_id BIGINT
--- AS
--- BEGIN
---    SELECT *
---    FROM Itinerary i
---    JOIN Itinerary_Picked_Hotel iph ON i.itinerary_id = iph.itinerary_id AND i.trip_id = iph.trip_id
---    JOIN Destination d ON i.destination_id = d.destination_id
---    WHERE i.trip_id = @trip_id;
--- END;
--- GO
-
 -- Delete a selected hotel from a user's itinerary. Called when a user decides to remove a hotel from their trip and updates the Itinerary_Picked_Hotel table to reflect the change
 CREATE PROCEDURE DeleteHotelFromItinerary
    @itinerary_id BIGINT,
