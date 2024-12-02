@@ -147,3 +147,7 @@ def delete_destination(destination_id):
         return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
+
+#start Flask server
+if __name__ == '__main__':
+    app.run(debug=True)
