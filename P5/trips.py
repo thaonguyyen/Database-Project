@@ -31,7 +31,7 @@ def get_db_connection():
         print("Database connection error:", e)
         return None
     
-#GET all reviews
+#GET all trips
 @app.route('/trips', methods=['GET'])
 def get_all_trips():
     conn = get_db_connection()
@@ -39,7 +39,7 @@ def get_all_trips():
     if conn is None:
         return jsonify({"error": "Database connection failed"}), 500
 
-    #retrieve all reviews
+    #retrieve all trips
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM Trip")
@@ -51,7 +51,7 @@ def get_all_trips():
     finally:
         conn.close()
 
-#GET a review with specific review ID
+#GET a trip with specific trip ID
 @app.route('/trips/<int:trip_id>', methods=['GET'])
 def get_trip_by_id(trip_id):
     conn = get_db_connection()
@@ -59,12 +59,12 @@ def get_trip_by_id(trip_id):
     if conn is None:
         return jsonify({"error": "Database connection failed"}), 500
 
-    #retrieve review with specific ID
+    #retrieve trip with specific ID
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM Trip WHERE trip_id = ?", trip_id)
         row = cursor.fetchone()
-        #return if specified review exists
+        #return if specified trip exists
         if row:
             columns = [column[0] for column in cursor.description]
             trip = dict(zip(columns, row))
@@ -76,12 +76,12 @@ def get_trip_by_id(trip_id):
     finally:
         conn.close()
 
-#POST a new review
+#POST a new trip
 @app.route('/trips', methods=['POST'])
 def create_trip():
     data = request.json
 
-    #validate review input
+    #validate trip input
     required_fields = ['trip_id', 'user_id', 'number_of_people']
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
@@ -90,7 +90,7 @@ def create_trip():
     if conn is None:
         return jsonify({"error": "Database connection failed"}), 500
 
-    #insert new review into table
+    #insert new trip into table
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -107,17 +107,17 @@ def create_trip():
     finally:
         conn.close()
 
-#PUT and update an existing review based on specified ID
+#PUT and update an existing trip based on specified ID
 #must include destination, user_id, star_rating, and comment in request
 @app.route('/trips/<int:trip_id>', methods=['PUT'])
-def update_review(trip_id):
+def update_trip(trip_id):
     data = request.json
     conn = get_db_connection()
 
     if conn is None:
         return jsonify({"error": "Database connection failed"}), 500
 
-    #update review based on request
+    #update trip based on request
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -138,7 +138,7 @@ def update_review(trip_id):
     finally:
         conn.close()
 
-#DELETE a specific review
+#DELETE a specific trip
 @app.route('/trips/<int:trip_id>', methods=['DELETE'])
 def delete_trip(trip_id):
     conn = get_db_connection()
@@ -146,7 +146,7 @@ def delete_trip(trip_id):
     if conn is None:
         return jsonify({"error": "Database connection failed"}), 500
 
-    #delete specific review from table
+    #delete specific trip from table
     try:
         cursor = conn.cursor()
         cursor.execute("DELETE FROM Trip WHERE trip_id = ?", trip_id)
