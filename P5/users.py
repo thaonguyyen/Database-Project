@@ -70,7 +70,7 @@ def get_user(user_id):
 @app.route('/users', methods=['POST'])
 def create_new_user():
     data = request.json
-    required_fields = ['first_name', 'last_name', 'email', 'password', 'city', 'state', 'date_of_birth']
+    required_fields = ['user_id', 'first_name', 'last_name', 'email', 'password', 'city', 'state', 'date_of_birth']
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
     
@@ -82,10 +82,10 @@ def create_new_user():
         cursor = conn.cursor()
         cursor.execute(
             """
-            INSERT INTO [User] (first_name, last_name, email, password, city, [state], date_of_birth)
+            INSERT INTO [User] (user_id, first_name, last_name, email, password, city, [state], date_of_birth)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            data['first_name'], data['last_name'], data['email'], data['password'], data['city'], data['state'], data['date_of_birth']
+            data['user_id'], data['first_name'], data['last_name'], data['email'], data['password'], data['city'], data['state'], data['date_of_birth']
         )
         conn.commit()
         return jsonify({"message": "Created user successfully"}), 201
